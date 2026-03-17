@@ -31,6 +31,11 @@ const config: DocsThemeConfig = {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </>
   ),
+  useNextSeoProps() {
+    return {
+      titleTemplate: '%s – Cloudheed Docs'
+    }
+  },
   project: {
     link: 'https://github.com/cloudheed/api',
   },
