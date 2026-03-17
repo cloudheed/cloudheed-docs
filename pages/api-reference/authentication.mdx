@@ -1,0 +1,264 @@
+# Authentication Endpoints
+
+API reference for authentication endpoints.
+
+import { Callout } from 'nextra/components'
+
+## Register
+
+Create a new account.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/register`
+
+### Request Body
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword",
+  "name": "John Doe",
+  "company": "Acme Corp"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address |
+| `password` | string | Yes | Password (min 8 chars) |
+| `name` | string | Yes | Full name |
+| `company` | string | No | Company name |
+
+### Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "user-123",
+    "email": "user@example.com",
+    "name": "John Doe"
+  }
+}
+```
+
+---
+
+## Login
+
+Authenticate and receive tokens.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/login`
+
+### Request Body
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword",
+  "totp_code": "123456"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address |
+| `password` | string | Yes | Password |
+| `totp_code` | string | If 2FA enabled | TOTP code |
+
+### Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "user-123",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "two_factor_enabled": false
+  }
+}
+```
+
+---
+
+## Refresh Token
+
+Get a new access token.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/refresh`
+
+### Request Body
+
+```json
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+### Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+---
+
+## Get Current User
+
+Get the authenticated user's profile.
+
+<span className="method-badge method-get">GET</span> `/v1/auth/me`
+
+```bash
+curl https://api.cloudheed.com/v1/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Response
+
+```json
+{
+  "id": "user-123",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "company": "Acme Corp",
+  "plan": "pro",
+  "two_factor_enabled": true,
+  "email_verified_at": "2026-01-01T00:00:00Z",
+  "created_at": "2026-01-01T00:00:00Z"
+}
+```
+
+---
+
+## Create API Key
+
+Create a new API key.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/api-keys`
+
+### Request Body
+
+```json
+{
+  "name": "Production Key",
+  "scopes": ["databases:read", "databases:write"],
+  "expires_in": "365d"
+}
+```
+
+### Response
+
+```json
+{
+  "api_key": "ch_live_abc123...",
+  "id": "key-123",
+  "name": "Production Key",
+  "prefix": "ch_live_abc",
+  "scopes": ["databases:read", "databases:write"],
+  "expires_at": "2027-03-17T00:00:00Z"
+}
+```
+
+<Callout type="error">
+  The full API key is only returned once. Store it securely.
+</Callout>
+
+---
+
+## List API Keys
+
+<span className="method-badge method-get">GET</span> `/v1/auth/api-keys`
+
+### Response
+
+```json
+{
+  "api_keys": [
+    {
+      "id": "key-123",
+      "name": "Production Key",
+      "prefix": "ch_live_abc",
+      "scopes": ["databases:read", "databases:write"],
+      "last_used_at": "2026-03-17T10:00:00Z",
+      "expires_at": "2027-03-17T00:00:00Z",
+      "created_at": "2026-03-17T00:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Revoke API Key
+
+<span className="method-badge method-delete">DELETE</span> `/v1/auth/api-keys/{id}`
+
+### Response
+
+```json
+{
+  "message_code": "api_key_revoked"
+}
+```
+
+---
+
+## Setup 2FA
+
+Initialize two-factor authentication.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/2fa/setup`
+
+### Response
+
+```json
+{
+  "secret": "JBSWY3DPEHPK3PXP",
+  "qr_code_url": "otpauth://totp/Cloudheed:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Cloudheed"
+}
+```
+
+---
+
+## Verify 2FA
+
+Verify TOTP code and enable 2FA.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/2fa/verify`
+
+### Request Body
+
+```json
+{
+  "code": "123456"
+}
+```
+
+### Response
+
+```json
+{
+  "message_code": "2fa_enabled",
+  "backup_codes": ["abc123", "def456", "ghi789"]
+}
+```
+
+---
+
+## Disable 2FA
+
+<span className="method-badge method-post">POST</span> `/v1/auth/2fa/disable`
+
+### Request Body
+
+```json
+{
+  "password": "yourpassword",
+  "code": "123456"
+}
+```

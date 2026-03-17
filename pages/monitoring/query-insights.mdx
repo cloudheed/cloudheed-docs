@@ -1,0 +1,198 @@
+# Query Insights
+
+Analyze and optimize slow queries.
+
+import { Callout } from 'nextra/components'
+
+## Overview
+
+Query Insights helps you identify and optimize slow-running queries using PostgreSQL's `pg_stat_statements` extension.
+
+## Get Slow Queries
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/query-insights`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/query-insights \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `24h` | Time period |
+| `sort_by` | string | `total_time` | Sort field |
+| `limit` | integer | 20 | Number of queries |
+
+### Response
+
+```json
+{
+  "queries": [
+    {
+      "query_id": "abc123",
+      "query": "SELECT * FROM users WHERE email = $1",
+      "calls": 15420,
+      "total_time_ms": 45230.5,
+      "mean_time_ms": 2.93,
+      "max_time_ms": 125.4,
+      "rows_returned": 15420,
+      "rows_per_call": 1,
+      "cache_hit_ratio": 99.1,
+      "first_seen": "2026-03-10T00:00:00Z",
+      "last_seen": "2026-03-17T10:00:00Z"
+    },
+    {
+      "query_id": "def456",
+      "query": "SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.created_at > $1",
+      "calls": 5230,
+      "total_time_ms": 38450.2,
+      "mean_time_ms": 7.35,
+      "max_time_ms": 850.2,
+      "rows_returned": 524500,
+      "rows_per_call": 100.3,
+      "cache_hit_ratio": 94.5,
+      "first_seen": "2026-03-15T00:00:00Z",
+      "last_seen": "2026-03-17T09:55:00Z"
+    }
+  ],
+  "meta": {
+    "period": "24h",
+    "total_queries_analyzed": 1250000
+  }
+}
+```
+
+## Query Details
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/query-insights/{query_id}`
+
+Get detailed analysis for a specific query:
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/query-insights/def456 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "query_id": "def456",
+  "query": "SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.created_at > $1",
+  "statistics": {
+    "calls": 5230,
+    "total_time_ms": 38450.2,
+    "mean_time_ms": 7.35,
+    "min_time_ms": 0.8,
+    "max_time_ms": 850.2,
+    "stddev_time_ms": 15.2
+  },
+  "io_statistics": {
+    "shared_blks_hit": 125000,
+    "shared_blks_read": 8500,
+    "cache_hit_ratio": 94.5
+  },
+  "execution_plan": {
+    "plan": "Hash Join (cost=125.50..450.25 rows=100 width=250)...",
+    "suggestions": [
+      {
+        "type": "missing_index",
+        "description": "Consider adding an index on orders.created_at",
+        "impact": "high"
+      }
+    ]
+  }
+}
+```
+
+## Explain Query
+
+Get the execution plan for a query:
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/query-insights/explain`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/query-insights/explain \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "SELECT * FROM users WHERE email = $1",
+    "params": ["user@example.com"],
+    "analyze": true
+  }'
+```
+
+Response:
+
+```json
+{
+  "plan": [
+    {
+      "Node Type": "Index Scan",
+      "Index Name": "users_email_idx",
+      "Relation Name": "users",
+      "Actual Rows": 1,
+      "Actual Total Time": 0.025,
+      "Planning Time": 0.1,
+      "Execution Time": 0.035
+    }
+  ],
+  "summary": {
+    "planning_time_ms": 0.1,
+    "execution_time_ms": 0.035,
+    "total_time_ms": 0.135
+  }
+}
+```
+
+<Callout type="warning">
+  Using `analyze: true` actually executes the query. Use with caution on write queries.
+</Callout>
+
+## Common Issues
+
+### Missing Indexes
+
+**Symptom**: Sequential scans on large tables
+
+```json
+{
+  "type": "missing_index",
+  "description": "Sequential scan on 'orders' table with 1M+ rows",
+  "suggestion": "CREATE INDEX idx_orders_user_id ON orders(user_id)"
+}
+```
+
+### N+1 Queries
+
+**Symptom**: Same query executed thousands of times
+
+```json
+{
+  "type": "n_plus_one",
+  "description": "Query executed 5000+ times in pattern suggesting N+1",
+  "suggestion": "Consider using JOINs or batch loading"
+}
+```
+
+### Low Cache Hit Ratio
+
+**Symptom**: Cache hit ratio below 95%
+
+```json
+{
+  "type": "low_cache_hit",
+  "description": "Cache hit ratio of 85% for this query",
+  "suggestion": "Consider increasing shared_buffers or optimizing query"
+}
+```
+
+## Best Practices
+
+1. **Review regularly** - Check insights weekly
+2. **Focus on total time** - Optimize queries with highest total time first
+3. **Add indexes** - Most slow queries benefit from proper indexing
+4. **Use EXPLAIN** - Understand query plans before optimizing
+5. **Test in staging** - Validate optimizations before production

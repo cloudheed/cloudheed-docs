@@ -1,0 +1,30 @@
+{
+  "index": {
+    "title": "Introduction",
+    "type": "page"
+  },
+  "getting-started": {
+    "title": "Getting Started"
+  },
+  "databases": {
+    "title": "Databases"
+  },
+  "backups": {
+    "title": "Backups"
+  },
+  "replicas": {
+    "title": "Read Replicas"
+  },
+  "monitoring": {
+    "title": "Monitoring"
+  },
+  "billing": {
+    "title": "Billing"
+  },
+  "organizations": {
+    "title": "Organizations"
+  },
+  "api-reference": {
+    "title": "API Reference"
+  }
+}

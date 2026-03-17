@@ -1,0 +1,136 @@
+# IP Allowlist
+
+Control network access to your database with IP allowlisting.
+
+import { Callout } from 'nextra/components'
+
+## Overview
+
+By default, databases are accessible from any IP address. Use IP allowlisting to restrict access to specific IPs or CIDR ranges.
+
+<Callout type="info">
+  When IP allowlist is enabled, only the specified IPs can connect to your database.
+</Callout>
+
+## Get Allowlist
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/ip-allowlist`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "enabled": true,
+  "rules": [
+    {
+      "id": "rule-123",
+      "cidr": "203.0.113.0/24",
+      "description": "Office network",
+      "created_at": "2026-03-17T10:00:00Z"
+    },
+    {
+      "id": "rule-456",
+      "cidr": "198.51.100.50/32",
+      "description": "Production server",
+      "created_at": "2026-03-17T11:00:00Z"
+    }
+  ]
+}
+```
+
+## Add IP Rule
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/ip-allowlist`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cidr": "203.0.113.0/24",
+    "description": "Office network"
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `cidr` | string | Yes | IP address or CIDR range |
+| `description` | string | No | Human-readable description |
+
+### CIDR Examples
+
+| CIDR | Description |
+|------|-------------|
+| `203.0.113.50/32` | Single IP address |
+| `203.0.113.0/24` | 256 addresses (203.0.113.0 - 203.0.113.255) |
+| `203.0.0.0/16` | 65,536 addresses |
+| `0.0.0.0/0` | All IPv4 addresses (disables allowlist) |
+
+## Remove IP Rule
+
+<span className="method-badge method-delete">DELETE</span> `/v1/databases/{id}/ip-allowlist/{rule_id}`
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist/rule-123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Enable/Disable Allowlist
+
+<span className="method-badge method-patch">PATCH</span> `/v1/databases/{id}/ip-allowlist`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "enabled": true
+  }'
+```
+
+<Callout type="warning">
+  Disabling the allowlist makes your database accessible from any IP. Use with caution in production.
+</Callout>
+
+## Common Use Cases
+
+### Allow Your Current IP
+
+```bash
+# Get your current IP
+MY_IP=$(curl -s ifconfig.me)
+
+# Add to allowlist
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"cidr\": \"$MY_IP/32\", \"description\": \"My IP\"}"
+```
+
+### Allow AWS Region
+
+```bash
+# Add AWS us-east-1 NAT Gateway IPs
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/ip-allowlist \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cidr": "52.0.0.0/8",
+    "description": "AWS us-east-1"
+  }'
+```
+
+## Best Practices
+
+1. **Use CIDR ranges for dynamic IPs** - Cloud providers often have IP ranges
+2. **Add descriptions** - Document why each IP is allowed
+3. **Review regularly** - Remove unused rules periodically
+4. **Start restrictive** - Begin with specific IPs, then expand as needed
+5. **Use VPN** - Consider a VPN for more secure remote access

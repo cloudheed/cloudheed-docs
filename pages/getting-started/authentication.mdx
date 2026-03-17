@@ -1,0 +1,133 @@
+# Authentication
+
+Learn about JWT tokens, API keys, and securing your API requests.
+
+import { Callout, Tabs } from 'nextra/components'
+
+## Authentication Methods
+
+Cloudheed supports two authentication methods:
+
+| Method | Use Case | Expiration |
+|--------|----------|------------|
+| **JWT Token** | Web apps, user sessions | 1 hour |
+| **API Key** | Server-to-server, CI/CD | Configurable |
+
+## JWT Tokens
+
+JWT tokens are short-lived and ideal for web applications.
+
+### Obtaining a Token
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "you@example.com",
+    "password": "yourpassword"
+  }'
+```
+
+### Using the Token
+
+Include the token in the `Authorization` header:
+
+```bash
+curl https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+### Refreshing Tokens
+
+Tokens expire after 1 hour. Use the refresh token to get a new one:
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refresh_token": "your_refresh_token"
+  }'
+```
+
+## API Keys
+
+API keys are long-lived and ideal for server-to-server communication.
+
+### Creating an API Key
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/api-keys \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production Key",
+    "scopes": ["databases:read", "databases:write"],
+    "expires_in": "365d"
+  }'
+```
+
+<Callout type="error">
+  The full API key is only returned once. Store it securely in your environment variables or secrets manager.
+</Callout>
+
+### Using an API Key
+
+```bash
+curl https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer ch_live_abc123..."
+```
+
+### Available Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `databases:read` | List and view databases |
+| `databases:write` | Create, update, delete databases |
+| `backups:read` | View backups |
+| `backups:write` | Create and restore backups |
+| `billing:read` | View billing information |
+| `org:read` | View organization details |
+| `org:write` | Manage organization settings |
+
+## Two-Factor Authentication (2FA)
+
+Enable 2FA for additional security.
+
+### Setup 2FA
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/2fa/setup \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response includes a QR code URL for your authenticator app:
+
+```json
+{
+  "secret": "JBSWY3DPEHPK3PXP",
+  "qr_code_url": "otpauth://totp/Cloudheed:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Cloudheed"
+}
+```
+
+### Verify and Enable
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/2fa/verify \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "123456"
+  }'
+```
+
+<Callout type="info">
+  Store your backup codes securely. You'll need them if you lose access to your authenticator app.
+</Callout>
+
+## Best Practices
+
+1. **Use API keys for production** - They're more secure and auditable
+2. **Limit scopes** - Only request the permissions you need
+3. **Rotate keys regularly** - Set expiration dates and rotate keys
+4. **Use environment variables** - Never hardcode credentials
+5. **Enable 2FA** - Protect your account with two-factor authentication

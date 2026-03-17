@@ -1,0 +1,149 @@
+# Billing Overview
+
+Understand how Cloudheed billing works.
+
+import { Callout } from 'nextra/components'
+
+## Billing Model
+
+Cloudheed uses **usage-based billing**:
+
+- **Compute**: Billed per hour while database is running
+- **Storage**: Billed per GB per month
+- **Backups**: Included in tier pricing
+- **Data Transfer**: 100GB/month free, then $0.05/GB
+
+## Get Current Usage
+
+<span className="method-badge method-get">GET</span> `/v1/billing/usage`
+
+```bash
+curl https://api.cloudheed.com/v1/billing/usage \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "period": {
+    "start": "2026-03-01T00:00:00Z",
+    "end": "2026-03-31T23:59:59Z"
+  },
+  "usage": {
+    "compute": {
+      "hours": 720,
+      "amount": 79.99
+    },
+    "storage": {
+      "gb": 25.5,
+      "amount": 2.55
+    },
+    "data_transfer": {
+      "gb": 45.2,
+      "amount": 0
+    },
+    "replicas": {
+      "hours": 0,
+      "amount": 0
+    }
+  },
+  "total": 82.54,
+  "currency": "USD"
+}
+```
+
+## View Invoices
+
+<span className="method-badge method-get">GET</span> `/v1/billing/invoices`
+
+```bash
+curl https://api.cloudheed.com/v1/billing/invoices \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "invoices": [
+    {
+      "id": "inv-123",
+      "period": "2026-02",
+      "amount": 89.99,
+      "status": "paid",
+      "paid_at": "2026-03-01T00:00:00Z",
+      "pdf_url": "https://api.cloudheed.com/v1/billing/invoices/inv-123/pdf"
+    }
+  ]
+}
+```
+
+## Payment Methods
+
+### List Payment Methods
+
+<span className="method-badge method-get">GET</span> `/v1/billing/payment-methods`
+
+### Add Payment Method
+
+<span className="method-badge method-post">POST</span> `/v1/billing/payment-methods`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/billing/payment-methods \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "card",
+    "token": "tok_visa"
+  }'
+```
+
+<Callout type="info">
+  Payment tokens are obtained via our client-side SDK or Stripe Elements.
+</Callout>
+
+### Set Default Payment Method
+
+<span className="method-badge method-patch">PATCH</span> `/v1/billing/payment-methods/{id}`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/billing/payment-methods/pm-123 \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "default": true
+  }'
+```
+
+## Cost Optimization
+
+### Stop Unused Databases
+
+Stopped databases don't incur compute charges:
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/stop \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Use Appropriate Tiers
+
+Start small and scale up as needed. See [Pricing](/billing/pricing) for tier details.
+
+### Monitor Usage
+
+Set up billing alerts to avoid surprises:
+
+<span className="method-badge method-post">POST</span> `/v1/billing/alerts`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/billing/alerts \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "threshold": 100,
+    "currency": "USD",
+    "channels": ["email"]
+  }'
+```

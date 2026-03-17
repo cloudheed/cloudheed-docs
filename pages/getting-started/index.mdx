@@ -1,0 +1,82 @@
+# Getting Started
+
+Welcome to Cloudheed! This guide will help you get up and running with our managed PostgreSQL service.
+
+import { Cards, Card } from 'nextra/components'
+
+<Cards>
+  <Card
+    title="Quick Start"
+    href="/getting-started/quickstart"
+    arrow
+  />
+  <Card
+    title="Authentication"
+    href="/getting-started/authentication"
+    arrow
+  />
+</Cards>
+
+## What is Cloudheed?
+
+Cloudheed is a managed PostgreSQL database platform that lets you:
+
+- **Create databases instantly** - Spin up PostgreSQL instances in seconds
+- **Scale on demand** - Upgrade resources with zero downtime
+- **Monitor everything** - Real-time metrics and query insights
+- **Secure by default** - SSL, IP allowlisting, and encryption at rest
+
+## API Overview
+
+The Cloudheed API follows RESTful conventions:
+
+- **Base URL**: `https://api.cloudheed.com`
+- **Authentication**: Bearer token or API key
+- **Content-Type**: `application/json`
+- **Rate Limiting**: 1000 requests/minute
+
+## Response Format
+
+All responses follow this structure:
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "request_id": "req-abc123"
+  }
+}
+```
+
+## Error Handling
+
+Errors include a code and message:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid email format",
+    "details": [
+      {
+        "field": "email",
+        "message": "Must be a valid email address"
+      }
+    ]
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `201` | Created |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden |
+| `404` | Not Found |
+| `422` | Validation Error |
+| `429` | Rate Limited |
+| `500` | Server Error |

@@ -1,0 +1,148 @@
+# Point-in-Time Recovery
+
+Restore your database to any point within the retention window.
+
+import { Callout } from 'nextra/components'
+
+## Overview
+
+Point-in-Time Recovery (PITR) allows you to restore your database to any second within the retention period, not just to specific backup snapshots.
+
+<Callout type="info">
+  PITR is available on Small tier and above.
+</Callout>
+
+## How It Works
+
+PITR uses PostgreSQL's Write-Ahead Log (WAL) to:
+
+1. Continuously archive transaction logs
+2. Store logs alongside daily backups
+3. Enable restoration to any point in time
+
+## Retention Periods
+
+| Tier | PITR Retention |
+|------|----------------|
+| Free | Not available |
+| Micro | Not available |
+| Small | 7 days |
+| Medium | 14 days |
+| Large+ | 30 days |
+
+## Restore to Point in Time
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/pitr`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/pitr \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target_time": "2026-03-17T10:30:00Z",
+    "target_database_name": "restored-db"
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target_time` | string | Yes | ISO 8601 timestamp to restore to |
+| `target_database_name` | string | No | Name for restored database |
+
+### Response
+
+```json
+{
+  "id": "pitr-123",
+  "database_id": "db-abc123",
+  "target_time": "2026-03-17T10:30:00Z",
+  "target_database_name": "restored-db",
+  "status": "in_progress",
+  "created_at": "2026-03-17T12:00:00Z"
+}
+```
+
+## Check PITR Status
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/pitr/{pitr_id}`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/pitr/pitr-123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "pitr-123",
+  "status": "completed",
+  "restored_database_id": "db-xyz789",
+  "target_time": "2026-03-17T10:30:00Z",
+  "completed_at": "2026-03-17T12:05:00Z"
+}
+```
+
+## Get Recovery Window
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/pitr/window`
+
+Check the available recovery time range:
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/pitr/window \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "earliest_recovery_time": "2026-03-10T03:00:00Z",
+  "latest_recovery_time": "2026-03-17T11:59:59Z"
+}
+```
+
+## Common Use Cases
+
+### Recover from Accidental Deletion
+
+```bash
+# Find the time just before the accident
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/pitr \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target_time": "2026-03-17T09:59:00Z",
+    "target_database_name": "recovered-before-delete"
+  }'
+```
+
+### Test a Migration Rollback
+
+```bash
+# Restore to pre-migration state
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/pitr \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target_time": "2026-03-17T08:00:00Z",
+    "target_database_name": "migration-rollback-test"
+  }'
+```
+
+## Limitations
+
+- Target time must be within the retention window
+- PITR creates a new database (doesn't overwrite existing)
+- Recovery time depends on database size and amount of WAL data
+- Some operations (like TRUNCATE) may not be fully recoverable
+
+## Best Practices
+
+1. **Note timestamps** - Record times before risky operations
+2. **Use UTC** - Always specify times in UTC to avoid confusion
+3. **Test recovery** - Periodically test PITR to ensure it works
+4. **Monitor WAL archiving** - Check that WAL archiving is healthy

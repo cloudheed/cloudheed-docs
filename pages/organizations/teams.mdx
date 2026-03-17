@@ -1,0 +1,157 @@
+# Team Management
+
+Invite team members and manage permissions.
+
+import { Callout } from 'nextra/components'
+
+## Roles
+
+| Role | Permissions |
+|------|-------------|
+| **Owner** | Full access, billing, delete org |
+| **Admin** | Manage members, all database operations |
+| **Developer** | Create and manage databases |
+| **Viewer** | Read-only access |
+
+## List Members
+
+<span className="method-badge method-get">GET</span> `/v1/organization/members`
+
+```bash
+curl https://api.cloudheed.com/v1/organization/members \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "members": [
+    {
+      "id": "member-123",
+      "user": {
+        "id": "user-123",
+        "email": "owner@example.com",
+        "name": "John Doe"
+      },
+      "role": "owner",
+      "joined_at": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "member-456",
+      "user": {
+        "id": "user-456",
+        "email": "dev@example.com",
+        "name": "Jane Smith"
+      },
+      "role": "developer",
+      "joined_at": "2026-02-15T00:00:00Z"
+    }
+  ]
+}
+```
+
+## Invite Member
+
+<span className="method-badge method-post">POST</span> `/v1/organization/members`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/organization/members \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newmember@example.com",
+    "role": "developer"
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "invite-123",
+  "email": "newmember@example.com",
+  "role": "developer",
+  "status": "pending",
+  "expires_at": "2026-03-24T00:00:00Z",
+  "created_at": "2026-03-17T00:00:00Z"
+}
+```
+
+<Callout type="info">
+  The invitee will receive an email with a link to accept the invitation.
+</Callout>
+
+## Update Member Role
+
+<span className="method-badge method-patch">PATCH</span> `/v1/organization/members/{id}`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/organization/members/member-456 \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "admin"
+  }'
+```
+
+## Remove Member
+
+<span className="method-badge method-delete">DELETE</span> `/v1/organization/members/{id}`
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/organization/members/member-456 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+<Callout type="warning">
+  Removing a member revokes their access immediately. Any API keys they created remain active until explicitly revoked.
+</Callout>
+
+## Pending Invitations
+
+### List Invitations
+
+<span className="method-badge method-get">GET</span> `/v1/organization/invitations`
+
+### Cancel Invitation
+
+<span className="method-badge method-delete">DELETE</span> `/v1/organization/invitations/{id}`
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/organization/invitations/invite-123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Permission Matrix
+
+| Action | Owner | Admin | Developer | Viewer |
+|--------|:-----:|:-----:|:---------:|:------:|
+| View databases | ✓ | ✓ | ✓ | ✓ |
+| Create databases | ✓ | ✓ | ✓ | |
+| Delete databases | ✓ | ✓ | ✓ | |
+| Manage backups | ✓ | ✓ | ✓ | |
+| View metrics | ✓ | ✓ | ✓ | ✓ |
+| Manage members | ✓ | ✓ | | |
+| Change settings | ✓ | ✓ | | |
+| View billing | ✓ | ✓ | | |
+| Manage billing | ✓ | | | |
+| Delete organization | ✓ | | | |
+
+## Transfer Ownership
+
+<span className="method-badge method-post">POST</span> `/v1/organization/transfer`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/organization/transfer \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "new_owner_id": "user-789",
+    "password": "current_password"
+  }'
+```
+
+<Callout type="error">
+  Ownership transfer is irreversible. You'll become an admin after transfer.
+</Callout>

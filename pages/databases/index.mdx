@@ -1,0 +1,117 @@
+# Database Overview
+
+Learn how to manage PostgreSQL databases with the Cloudheed API.
+
+import { Callout } from 'nextra/components'
+
+## Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| <span className="method-badge method-post">POST</span> | `/v1/databases` | Create database |
+| <span className="method-badge method-get">GET</span> | `/v1/databases` | List databases |
+| <span className="method-badge method-get">GET</span> | `/v1/databases/{id}` | Get database details |
+| <span className="method-badge method-patch">PATCH</span> | `/v1/databases/{id}` | Rename database |
+| <span className="method-badge method-delete">DELETE</span> | `/v1/databases/{id}` | Delete database |
+| <span className="method-badge method-post">POST</span> | `/v1/databases/{id}/start` | Start database |
+| <span className="method-badge method-post">POST</span> | `/v1/databases/{id}/stop` | Stop database |
+| <span className="method-badge method-post">POST</span> | `/v1/databases/{id}/restart` | Restart database |
+| <span className="method-badge method-post">POST</span> | `/v1/databases/{id}/resize` | Upgrade tier |
+| <span className="method-badge method-post">POST</span> | `/v1/databases/{id}/reset-password` | Reset password |
+
+## Database Object
+
+```json
+{
+  "id": "db-abc123",
+  "name": "my-database",
+  "type": "postgres",
+  "region": "fsn1",
+  "tier": "micro",
+  "version": "17",
+  "status": "running",
+  "host": "db-abc123.db.cloudheed.cloud",
+  "port": 5432,
+  "database": "postgres",
+  "username": "cloudheed",
+  "connection_string": "postgresql://cloudheed:****@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require",
+  "created_at": "2026-03-17T10:00:00Z",
+  "updated_at": "2026-03-17T10:00:00Z"
+}
+```
+
+## Database Status Values
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Database creation requested |
+| `provisioning` | Server and container being set up |
+| `running` | Database is active and accepting connections |
+| `stopped` | Database is stopped (no compute charges) |
+| `failed` | Provisioning or operation failed |
+| `deleting` | Database is being deleted |
+
+## List Databases
+
+```bash
+curl https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "databases": [
+    {
+      "id": "db-abc123",
+      "name": "production-db",
+      "region": "fsn1",
+      "tier": "small",
+      "status": "running"
+    },
+    {
+      "id": "db-xyz789",
+      "name": "staging-db",
+      "region": "fsn1",
+      "tier": "micro",
+      "status": "running"
+    }
+  ]
+}
+```
+
+## Get Database Details
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Rename Database
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/databases/db-abc123 \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "new-database-name"
+  }'
+```
+
+## Delete Database
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/databases/db-abc123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+<Callout type="info">
+  Deleted databases are retained for 7 days and can be restored by contacting support.
+</Callout>
+
+## Next Steps
+
+- [Create Database](/databases/create) - Create a new database
+- [Manage Databases](/databases/manage) - Start, stop, resize operations
+- [Configuration](/databases/configuration) - Customize PostgreSQL settings

@@ -1,0 +1,117 @@
+# Create Database
+
+Create a new PostgreSQL database instance.
+
+import { Callout } from 'nextra/components'
+
+## Endpoint
+
+<span className="method-badge method-post">POST</span> `/v1/databases`
+
+## Request
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-app-db",
+    "region": "fsn1",
+    "tier": "micro",
+    "version": "17"
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Database name (3-63 chars, lowercase, alphanumeric, hyphens) |
+| `region` | string | Yes | Region code (see below) |
+| `tier` | string | Yes | Instance tier (see below) |
+| `version` | string | No | PostgreSQL version (default: `17`) |
+
+## Response
+
+```json
+{
+  "id": "db-abc123",
+  "name": "my-app-db",
+  "type": "postgres",
+  "region": "fsn1",
+  "tier": "micro",
+  "version": "17",
+  "status": "provisioning",
+  "host": "db-abc123.db.cloudheed.cloud",
+  "port": 5432,
+  "database": "postgres",
+  "username": "cloudheed",
+  "password": "generated-secure-password",
+  "connection_string": "postgresql://cloudheed:generated-secure-password@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require",
+  "created_at": "2026-03-17T10:00:00Z"
+}
+```
+
+<Callout type="warning">
+  **Important:** The password is only returned once when the database is created. Store it securely!
+</Callout>
+
+## Available Regions
+
+| Code | Location | Latency to EU | Latency to US |
+|------|----------|---------------|---------------|
+| `fsn1` | Falkenstein, Germany | ~10ms | ~100ms |
+| `nbg1` | Nuremberg, Germany | ~10ms | ~100ms |
+| `hel1` | Helsinki, Finland | ~20ms | ~120ms |
+| `ash` | Ashburn, Virginia | ~90ms | ~10ms |
+| `hil` | Hillsboro, Oregon | ~140ms | ~20ms |
+| `sin` | Singapore | ~160ms | ~180ms |
+
+## Database Tiers
+
+| Tier | vCPU | Memory | Storage | Connections | Price/mo |
+|------|------|--------|---------|-------------|----------|
+| `free` | 0.25 shared | 256 MB | 500 MB | 3 | €0 |
+| `micro` | 2 shared | 1 GB | 10 GB | 60 | €19.99 |
+| `small` | 2 shared | 2 GB | 20 GB | 90 | €39.99 |
+| `medium` | 2 shared | 4 GB | 40 GB | 120 | €79.99 |
+| `large` | 4 dedicated | 8 GB | 80 GB | 160 | €149.99 |
+| `xl` | 4 dedicated | 16 GB | 160 GB | 240 | €299.99 |
+| `2xl` | 8 dedicated | 32 GB | 245 GB | 380 | €449.99 |
+| `4xl` | 16 dedicated | 64 GB | 368 GB | 480 | €899.99 |
+| `8xl` | 32 dedicated | 128 GB | 600 GB | 600 | €1,799.99 |
+
+## PostgreSQL Versions
+
+| Version | Status |
+|---------|--------|
+| `18` | Beta |
+| `17` | Latest (default) |
+| `16` | Supported |
+| `14` | Supported |
+
+## Naming Rules
+
+- 3-63 characters
+- Lowercase letters, numbers, and hyphens only
+- Must start with a letter
+- Must end with a letter or number
+- No consecutive hyphens
+
+## Connection Example
+
+After creation, connect using the provided credentials:
+
+```bash
+psql "postgresql://cloudheed:YOUR_PASSWORD@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+```
+
+## Error Responses
+
+| Code | Description |
+|------|-------------|
+| `400` | Invalid parameters |
+| `401` | Unauthorized |
+| `402` | Payment required (tier limit reached) |
+| `409` | Database name already exists |
+| `422` | Validation error |

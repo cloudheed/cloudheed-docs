@@ -1,0 +1,120 @@
+# Configuration
+
+Customize PostgreSQL settings for your database.
+
+import { Callout } from 'nextra/components'
+
+## Get Configuration
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/configuration`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/configuration \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "configuration": {
+    "max_connections": 100,
+    "shared_buffers": "256MB",
+    "work_mem": "4MB",
+    "maintenance_work_mem": "64MB",
+    "effective_cache_size": "768MB",
+    "checkpoint_completion_target": 0.9,
+    "wal_buffers": "8MB",
+    "default_statistics_target": 100,
+    "random_page_cost": 1.1,
+    "effective_io_concurrency": 200,
+    "log_min_duration_statement": 1000,
+    "log_statement": "none"
+  }
+}
+```
+
+## Update Configuration
+
+<span className="method-badge method-patch">PATCH</span> `/v1/databases/{id}/configuration`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/databases/db-abc123/configuration \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "max_connections": 200,
+    "log_min_duration_statement": 500
+  }'
+```
+
+<Callout type="warning">
+  Some configuration changes require a database restart to take effect.
+</Callout>
+
+## Available Parameters
+
+### Connection Settings
+
+| Parameter | Default | Range | Restart Required |
+|-----------|---------|-------|------------------|
+| `max_connections` | Tier-dependent | 5-2000 | Yes |
+| `idle_in_transaction_session_timeout` | `0` | 0-86400000 (ms) | No |
+| `statement_timeout` | `0` | 0-86400000 (ms) | No |
+
+### Memory Settings
+
+| Parameter | Default | Description | Restart Required |
+|-----------|---------|-------------|------------------|
+| `shared_buffers` | 25% of RAM | Database cache size | Yes |
+| `work_mem` | `4MB` | Per-operation memory | No |
+| `maintenance_work_mem` | `64MB` | Maintenance operations | No |
+| `effective_cache_size` | 75% of RAM | Query planner estimate | No |
+
+### Write-Ahead Log (WAL)
+
+| Parameter | Default | Description | Restart Required |
+|-----------|---------|-------------|------------------|
+| `wal_buffers` | `8MB` | WAL buffer size | Yes |
+| `checkpoint_completion_target` | `0.9` | Checkpoint spread | No |
+| `max_wal_size` | `1GB` | Maximum WAL size | No |
+| `min_wal_size` | `80MB` | Minimum WAL size | No |
+
+### Query Planning
+
+| Parameter | Default | Description | Restart Required |
+|-----------|---------|-------------|------------------|
+| `random_page_cost` | `1.1` | Random I/O cost estimate | No |
+| `effective_io_concurrency` | `200` | Concurrent I/O operations | No |
+| `default_statistics_target` | `100` | Statistics sampling | No |
+
+### Logging
+
+| Parameter | Default | Options | Restart Required |
+|-----------|---------|---------|------------------|
+| `log_statement` | `none` | `none`, `ddl`, `mod`, `all` | No |
+| `log_min_duration_statement` | `1000` | -1 to 2147483647 (ms) | No |
+| `log_connections` | `false` | `true`, `false` | No |
+| `log_disconnections` | `false` | `true`, `false` | No |
+
+## Tier-Specific Defaults
+
+Settings are automatically optimized based on your tier:
+
+| Tier | `shared_buffers` | `work_mem` | `max_connections` |
+|------|------------------|------------|-------------------|
+| `free` | 64MB | 2MB | 5 |
+| `micro` | 256MB | 4MB | 20 |
+| `small` | 512MB | 4MB | 50 |
+| `medium` | 1GB | 8MB | 100 |
+| `large` | 2GB | 16MB | 200 |
+| `xl` | 4GB | 32MB | 400 |
+| `2xl` | 8GB | 64MB | 800 |
+| `4xl` | 16GB | 128MB | 1500 |
+
+## Best Practices
+
+1. **Monitor before tuning** - Understand your workload first
+2. **Change one setting at a time** - Isolate the impact of changes
+3. **Test in staging** - Validate changes before production
+4. **Document changes** - Keep track of what you've modified

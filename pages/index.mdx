@@ -1,0 +1,42 @@
+---
+title: Cloudheed API Documentation
+---
+
+import { Cards, Card } from 'nextra/components'
+
+# Cloudheed API
+
+Build powerful applications with the Cloudheed managed PostgreSQL API. Create, manage, and monitor databases programmatically.
+
+<Cards>
+  <Card title="Quick Start" href="/getting-started/quickstart" arrow />
+  <Card title="Authentication" href="/getting-started/authentication" arrow />
+  <Card title="Database Management" href="/databases" arrow />
+  <Card title="API Reference" href="/api-reference" arrow />
+</Cards>
+
+## Base URL
+
+```
+https://api.cloudheed.com
+```
+
+## Authentication
+
+All authenticated endpoints require a Bearer token:
+
+```bash
+curl https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Supported Regions
+
+| Region | Location | Code |
+|--------|----------|------|
+| Falkenstein | Germany | `fsn1` |
+| Nuremberg | Germany | `nbg1` |
+| Helsinki | Finland | `hel1` |
+| Ashburn | Virginia, USA | `ash` |
+| Hillsboro | Oregon, USA | `hil` |
+| Singapore | Singapore | `sin` |

@@ -1,0 +1,134 @@
+# Backups Overview
+
+Cloudheed automatically backs up your databases daily and provides manual backup options.
+
+import { Callout } from 'nextra/components'
+
+## Automatic Backups
+
+All databases include automatic daily backups:
+
+| Tier | Retention | Frequency |
+|------|-----------|-----------|
+| Free | 1 day | Daily |
+| Micro | 7 days | Daily |
+| Small+ | 14 days | Daily |
+| Large+ | 30 days | Daily |
+
+## List Backups
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/backups`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/backups \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "backups": [
+    {
+      "id": "backup-123",
+      "database_id": "db-abc123",
+      "type": "automatic",
+      "status": "completed",
+      "size_bytes": 1073741824,
+      "created_at": "2026-03-17T03:00:00Z",
+      "expires_at": "2026-03-24T03:00:00Z"
+    },
+    {
+      "id": "backup-122",
+      "database_id": "db-abc123",
+      "type": "manual",
+      "status": "completed",
+      "size_bytes": 1073741824,
+      "created_at": "2026-03-16T15:30:00Z",
+      "expires_at": null
+    }
+  ]
+}
+```
+
+## Create Manual Backup
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/backups`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/backups \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "pre-migration-backup"
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "backup-124",
+  "database_id": "db-abc123",
+  "name": "pre-migration-backup",
+  "type": "manual",
+  "status": "in_progress",
+  "created_at": "2026-03-17T10:00:00Z"
+}
+```
+
+<Callout type="info">
+  Manual backups don't expire and count toward your storage quota.
+</Callout>
+
+## Restore from Backup
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/backups/{backup_id}/restore`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/backups/backup-123/restore \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target_database_name": "restored-db"
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target_database_name` | string | No | Name for restored database (default: original name + timestamp) |
+
+<Callout type="warning">
+  Restoring creates a new database. The original database remains unchanged.
+</Callout>
+
+## Delete Backup
+
+<span className="method-badge method-delete">DELETE</span> `/v1/databases/{id}/backups/{backup_id}`
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/databases/db-abc123/backups/backup-124 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+<Callout type="error">
+  Only manual backups can be deleted. Automatic backups are managed by the system.
+</Callout>
+
+## Backup Status Values
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Backup scheduled |
+| `in_progress` | Backup is running |
+| `completed` | Backup successful |
+| `failed` | Backup failed |
+
+## Best Practices
+
+1. **Create manual backups before migrations** - Always backup before schema changes
+2. **Test restores regularly** - Verify backups work by restoring to a test database
+3. **Monitor backup status** - Set up alerts for failed backups
+4. **Consider PITR** - For critical databases, enable Point-in-Time Recovery

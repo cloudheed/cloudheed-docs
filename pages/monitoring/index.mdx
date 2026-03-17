@@ -1,0 +1,161 @@
+# Metrics
+
+Monitor your database performance with real-time metrics.
+
+import { Callout } from 'nextra/components'
+
+## Get Metrics
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/metrics`
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123/metrics \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `1h` | Time period (`5m`, `1h`, `24h`, `7d`, `30d`) |
+| `resolution` | string | auto | Data resolution (`1m`, `5m`, `1h`) |
+
+### Response
+
+```json
+{
+  "database_id": "db-abc123",
+  "period": "1h",
+  "metrics": {
+    "cpu_percent": {
+      "current": 12.5,
+      "avg": 10.2,
+      "max": 45.0,
+      "data": [
+        {"timestamp": "2026-03-17T10:00:00Z", "value": 12.5},
+        {"timestamp": "2026-03-17T10:05:00Z", "value": 11.8}
+      ]
+    },
+    "memory_percent": {
+      "current": 68.3,
+      "avg": 65.1,
+      "max": 72.0
+    },
+    "disk_percent": {
+      "current": 45.2,
+      "avg": 44.8,
+      "max": 45.2
+    },
+    "connections_active": {
+      "current": 15,
+      "avg": 12,
+      "max": 25
+    },
+    "connections_idle": {
+      "current": 5,
+      "avg": 8,
+      "max": 12
+    },
+    "cache_hit_ratio": {
+      "current": 99.2,
+      "avg": 98.8,
+      "max": 99.5
+    },
+    "transactions_per_second": {
+      "current": 150,
+      "avg": 120,
+      "max": 450
+    },
+    "rows_fetched_per_second": {
+      "current": 1200,
+      "avg": 980,
+      "max": 3500
+    },
+    "rows_inserted_per_second": {
+      "current": 50,
+      "avg": 45,
+      "max": 200
+    }
+  }
+}
+```
+
+## Available Metrics
+
+### System Metrics
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| `cpu_percent` | CPU utilization | % |
+| `memory_percent` | Memory utilization | % |
+| `disk_percent` | Disk space used | % |
+| `disk_read_iops` | Disk read operations | ops/s |
+| `disk_write_iops` | Disk write operations | ops/s |
+
+### Connection Metrics
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| `connections_active` | Active connections | count |
+| `connections_idle` | Idle connections | count |
+| `connections_waiting` | Waiting connections | count |
+| `connections_total` | Total connections | count |
+
+### Database Metrics
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| `cache_hit_ratio` | Buffer cache hit ratio | % |
+| `transactions_per_second` | Transaction throughput | tps |
+| `rows_fetched_per_second` | Rows read | rows/s |
+| `rows_inserted_per_second` | Rows inserted | rows/s |
+| `rows_updated_per_second` | Rows updated | rows/s |
+| `rows_deleted_per_second` | Rows deleted | rows/s |
+
+### Replication Metrics
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| `replication_lag_bytes` | Replication lag | bytes |
+| `replication_lag_seconds` | Replication delay | seconds |
+
+## Health Indicators
+
+<Callout type="warning">
+  Monitor these thresholds for optimal performance.
+</Callout>
+
+| Metric | Warning | Critical |
+|--------|---------|----------|
+| CPU | 70%+ | 90%+ |
+| Memory | 80%+ | 95%+ |
+| Disk | 80%+ | 90%+ |
+| Cache hit ratio | below 95% | below 90% |
+| Connections | 80%+ of max | 95%+ of max |
+
+## Alerting
+
+Set up alerts for critical metrics:
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/alerts`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/alerts \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metric": "cpu_percent",
+    "condition": "greater_than",
+    "threshold": 80,
+    "duration": "5m",
+    "channels": ["email", "slack"]
+  }'
+```
+
+## Best Practices
+
+1. **Monitor cache hit ratio** - Should be >95% for optimal performance
+2. **Watch connection counts** - Implement connection pooling if needed
+3. **Set up alerts** - Get notified before issues become critical
+4. **Track disk growth** - Plan capacity before running out of space
+5. **Review trends** - Look at 7-day trends, not just current values

@@ -1,0 +1,128 @@
+# Manage Databases
+
+Start, stop, restart, and resize your databases.
+
+import { Callout } from 'nextra/components'
+
+## Start Database
+
+Resume a stopped database.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/start`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/start \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "db-abc123",
+  "status": "starting",
+  "message": "Database is starting up"
+}
+```
+
+## Stop Database
+
+Stop a running database to save costs.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/stop`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/stop \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+<Callout type="info">
+  Stopped databases don't incur compute charges, but storage charges still apply.
+</Callout>
+
+## Restart Database
+
+Restart a database to apply configuration changes.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/restart`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/restart \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Resize Database
+
+Upgrade or downgrade your database tier.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/resize`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/resize \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tier": "small"
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tier` | string | Yes | New tier (`micro`, `small`, `medium`, etc.) |
+
+<Callout type="warning">
+  Resizing requires a brief restart (typically under 30 seconds). Plan accordingly.
+</Callout>
+
+## Reset Password
+
+Generate a new database password.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/reset-password`
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases/db-abc123/reset-password \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "password": "new-generated-password",
+  "connection_string": "postgresql://cloudheed:new-generated-password@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+}
+```
+
+<Callout type="error">
+  This invalidates the previous password immediately. Update your application configuration.
+</Callout>
+
+## Operation Status
+
+All operations return immediately and process asynchronously. Poll the database endpoint to check status:
+
+```bash
+curl https://api.cloudheed.com/v1/databases/db-abc123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Status Values
+
+| Status | Description |
+|--------|-------------|
+| `starting` | Database is starting up |
+| `stopping` | Database is shutting down |
+| `resizing` | Resources are being adjusted |
+| `running` | Operation complete, database is ready |
+| `stopped` | Database is stopped |
+| `failed` | Operation failed |
+
+## Best Practices
+
+1. **Schedule maintenance** - Resize during low-traffic periods
+2. **Monitor after changes** - Check metrics after resizing
+3. **Use connection pooling** - Reduce restart impact with PgBouncer
+4. **Automate scaling** - Use metrics to trigger resize operations

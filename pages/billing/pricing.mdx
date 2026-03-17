@@ -1,0 +1,101 @@
+# Pricing
+
+Transparent, predictable pricing for every stage of growth.
+
+import { Callout } from 'nextra/components'
+
+## Database Tiers
+
+| Tier | vCPU | Memory | Storage | Connections | Price/mo |
+|------|------|--------|---------|-------------|----------|
+| **Free** | 0.25 shared | 256 MB | 500 MB | 3 | **€0** |
+| **Micro** | 2 shared | 1 GB | 10 GB | 60 | **€19.99** |
+| **Small** | 2 shared | 2 GB | 20 GB | 90 | **€39.99** |
+| **Medium** | 2 shared | 4 GB | 40 GB | 120 | **€79.99** |
+| **Large** | 4 dedicated | 8 GB | 80 GB | 160 | **€149.99** |
+| **XL** | 4 dedicated | 16 GB | 160 GB | 240 | **€299.99** |
+| **2XL** | 8 dedicated | 32 GB | 245 GB | 380 | **€449.99** |
+| **4XL** | 16 dedicated | 64 GB | 368 GB | 480 | **€899.99** |
+| **8XL** | 32 dedicated | 128 GB | 600 GB | 600 | **€1,799.99** |
+
+## Hourly Pricing
+
+All tiers are billed hourly when running:
+
+| Tier | Hourly Rate |
+|------|-------------|
+| Free | €0.00 |
+| Micro | €0.0278 |
+| Small | €0.0556 |
+| Medium | €0.1111 |
+| Large | €0.2083 |
+| XL | €0.4166 |
+| 2XL | €0.6249 |
+| 4XL | €1.2499 |
+| 8XL | €2.4999 |
+
+<Callout type="info">
+  Hourly rate = Monthly price / 720 hours. Costs are rounded up to the nearest cent.
+</Callout>
+
+## Free Tier Limits
+
+The free tier is perfect for development and small projects:
+
+- 1 database per account
+- 500 MB storage
+- 3 connections max
+- 0.25 shared vCPU
+- Community support
+
+## Regions
+
+Available in 6 global regions:
+
+| Region | Location |
+|--------|----------|
+| `fsn1` | Falkenstein, Germany |
+| `nbg1` | Nuremberg, Germany |
+| `hel1` | Helsinki, Finland |
+| `ash` | Ashburn, Virginia, USA |
+| `hil` | Hillsboro, Oregon, USA |
+| `sin` | Singapore |
+
+<Callout type="info">
+  Pricing may vary by region. Check the console for region-specific pricing.
+</Callout>
+
+## Billing Model
+
+- **Billing Period**: Calendar month (1st to end of month)
+- **Calculation**: Charged from database creation until deletion
+- **Invoicing**: Automatic monthly invoices with line items per database
+- **Currency**: EUR (Euro)
+
+<Callout type="warning">
+  Stopping a database does not pause billing. You are charged for the full duration from creation to deletion.
+</Callout>
+
+## FAQ
+
+### How am I billed?
+
+You're billed monthly based on usage. Compute is calculated hourly and summed at the end of each billing period.
+
+### Can I upgrade or downgrade?
+
+Yes, you can change tiers anytime. The new pricing takes effect immediately.
+
+### What payment methods are accepted?
+
+We accept all major credit cards and SEPA direct debit for EU customers.
+
+### Is there a free trial?
+
+The Free tier is available permanently for development and testing. No credit card required.
+
+## Contact Sales
+
+For custom pricing or enterprise needs:
+
+- Email: sales@cloudheed.com

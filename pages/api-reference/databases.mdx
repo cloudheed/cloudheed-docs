@@ -1,0 +1,231 @@
+# Database Endpoints
+
+API reference for database management endpoints.
+
+import { Callout } from 'nextra/components'
+
+## Create Database
+
+<span className="method-badge method-post">POST</span> `/v1/databases`
+
+### Request Body
+
+```json
+{
+  "name": "my-database",
+  "region": "fsn1",
+  "tier": "micro",
+  "version": "17"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Database name (3-63 chars) |
+| `region` | string | Yes | Region code |
+| `tier` | string | Yes | Instance tier |
+| `version` | string | No | PostgreSQL version (default: 17) |
+
+### Response `201 Created`
+
+```json
+{
+  "id": "db-abc123",
+  "name": "my-database",
+  "type": "postgres",
+  "region": "fsn1",
+  "tier": "micro",
+  "version": "17",
+  "status": "provisioning",
+  "host": "db-abc123.db.cloudheed.cloud",
+  "port": 5432,
+  "database": "postgres",
+  "username": "cloudheed",
+  "password": "generated-password",
+  "connection_string": "postgresql://cloudheed:generated-password@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require",
+  "created_at": "2026-03-17T10:00:00Z"
+}
+```
+
+---
+
+## List Databases
+
+<span className="method-badge method-get">GET</span> `/v1/databases`
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | 1 | Page number |
+| `per_page` | integer | 20 | Items per page (max 100) |
+| `status` | string | - | Filter by status |
+| `region` | string | - | Filter by region |
+
+### Response
+
+```json
+{
+  "databases": [
+    {
+      "id": "db-abc123",
+      "name": "production-db",
+      "region": "fsn1",
+      "tier": "small",
+      "version": "17",
+      "status": "running",
+      "created_at": "2026-03-17T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per_page": 20,
+    "total": 1
+  }
+}
+```
+
+---
+
+## Get Database
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}`
+
+### Response
+
+```json
+{
+  "id": "db-abc123",
+  "name": "my-database",
+  "type": "postgres",
+  "region": "fsn1",
+  "tier": "micro",
+  "version": "17",
+  "status": "running",
+  "host": "db-abc123.db.cloudheed.cloud",
+  "port": 5432,
+  "database": "postgres",
+  "username": "cloudheed",
+  "connection_string": "postgresql://cloudheed:****@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require",
+  "created_at": "2026-03-17T10:00:00Z",
+  "updated_at": "2026-03-17T10:00:00Z"
+}
+```
+
+---
+
+## Update Database
+
+<span className="method-badge method-patch">PATCH</span> `/v1/databases/{id}`
+
+### Request Body
+
+```json
+{
+  "name": "new-database-name"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | New database name |
+
+---
+
+## Delete Database
+
+<span className="method-badge method-delete">DELETE</span> `/v1/databases/{id}`
+
+### Response `204 No Content`
+
+<Callout type="info">
+  Deleted databases are retained for 7 days and can be restored by contacting support.
+</Callout>
+
+---
+
+## Start Database
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/start`
+
+### Response
+
+```json
+{
+  "id": "db-abc123",
+  "status": "starting"
+}
+```
+
+---
+
+## Stop Database
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/stop`
+
+### Response
+
+```json
+{
+  "id": "db-abc123",
+  "status": "stopping"
+}
+```
+
+---
+
+## Restart Database
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/restart`
+
+### Response
+
+```json
+{
+  "id": "db-abc123",
+  "status": "restarting"
+}
+```
+
+---
+
+## Resize Database
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/resize`
+
+### Request Body
+
+```json
+{
+  "tier": "small"
+}
+```
+
+### Response
+
+```json
+{
+  "id": "db-abc123",
+  "tier": "small",
+  "status": "resizing"
+}
+```
+
+---
+
+## Reset Password
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/reset-password`
+
+### Response
+
+```json
+{
+  "password": "new-generated-password",
+  "connection_string": "postgresql://cloudheed:new-generated-password@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+}
+```
+
+<Callout type="warning">
+  This invalidates the previous password immediately.
+</Callout>

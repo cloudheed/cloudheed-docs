@@ -1,0 +1,146 @@
+# Quick Start
+
+Create your first PostgreSQL database in minutes.
+
+import { Steps, Tabs, Callout } from 'nextra/components'
+
+<Steps>
+
+### Create an Account
+
+Sign up at [console.cloudheed.com](https://console.cloudheed.com) or use the API:
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "you@example.com",
+    "password": "securepassword123",
+    "name": "Your Name"
+  }'
+```
+
+### Get Your API Token
+
+Login to receive a JWT token:
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "you@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+Response:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "you@example.com"
+  }
+}
+```
+
+### Create a Database
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/databases \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-app-db",
+    "region": "fsn1",
+    "tier": "micro",
+    "version": "17"
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "db-abc123",
+  "name": "my-app-db",
+  "host": "db-abc123.db.cloudheed.cloud",
+  "port": 5432,
+  "username": "cloudheed",
+  "password": "generated-password",
+  "connection_string": "postgresql://cloudheed:generated-password@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+}
+```
+
+<Callout type="warning">
+  Save the password! It's only shown once when the database is created.
+</Callout>
+
+### Connect to Your Database
+
+<Tabs items={['psql', 'Node.js', 'Python']}>
+  <Tabs.Tab>
+```bash
+psql "postgresql://cloudheed:YOUR_PASSWORD@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: 'postgresql://cloudheed:YOUR_PASSWORD@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require'
+});
+
+const result = await pool.query('SELECT NOW()');
+console.log(result.rows[0]);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import psycopg2
+
+conn = psycopg2.connect(
+  "postgresql://cloudheed:YOUR_PASSWORD@db-abc123.db.cloudheed.cloud:5432/postgres?sslmode=require"
+)
+
+cur = conn.cursor()
+cur.execute("SELECT NOW()")
+print(cur.fetchone())
+```
+  </Tabs.Tab>
+</Tabs>
+
+</Steps>
+
+## Available Regions
+
+| Region ID | Location |
+|-----------|----------|
+| `fsn1` | Falkenstein, Germany |
+| `nbg1` | Nuremberg, Germany |
+| `hel1` | Helsinki, Finland |
+| `ash` | Ashburn, Virginia, USA |
+| `hil` | Hillsboro, Oregon, USA |
+| `sin` | Singapore |
+
+## Database Tiers
+
+| Tier | vCPU | Memory | Storage | Connections | Price/mo |
+|------|------|--------|---------|-------------|----------|
+| `free` | 0.25 shared | 256 MB | 500 MB | 3 | €0 |
+| `micro` | 2 shared | 1 GB | 10 GB | 60 | €19.99 |
+| `small` | 2 shared | 2 GB | 20 GB | 90 | €39.99 |
+| `medium` | 2 shared | 4 GB | 40 GB | 120 | €79.99 |
+| `large` | 4 dedicated | 8 GB | 80 GB | 160 | €149.99 |
+| `xl` | 4 dedicated | 16 GB | 160 GB | 240 | €299.99 |
+| `2xl` | 8 dedicated | 32 GB | 245 GB | 380 | €449.99 |
+| `4xl` | 16 dedicated | 64 GB | 368 GB | 480 | €899.99 |
+| `8xl` | 32 dedicated | 128 GB | 600 GB | 600 | €1,799.99 |
+
+## Next Steps
+
+- [Authentication](/getting-started/authentication) - Create API keys for production
+- [Database Management](/databases) - Learn all database operations
+- [Backups](/backups) - Configure automatic backups

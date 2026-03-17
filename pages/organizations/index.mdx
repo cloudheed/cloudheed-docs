@@ -1,0 +1,141 @@
+# Organizations
+
+Manage your organization and team members.
+
+import { Callout } from 'nextra/components'
+
+## Overview
+
+Organizations allow you to:
+
+- **Share resources** - Multiple users access the same databases
+- **Control permissions** - Role-based access control
+- **Centralize billing** - Single invoice for all usage
+
+## Get Organization
+
+<span className="method-badge method-get">GET</span> `/v1/organization`
+
+```bash
+curl https://api.cloudheed.com/v1/organization \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "org-123",
+  "name": "Acme Corp",
+  "slug": "acme-corp",
+  "plan": "pro",
+  "owner_id": "user-123",
+  "member_count": 5,
+  "database_count": 12,
+  "created_at": "2026-01-01T00:00:00Z"
+}
+```
+
+## Update Organization
+
+<span className="method-badge method-patch">PATCH</span> `/v1/organization`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/organization \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Acme Corporation"
+  }'
+```
+
+## Organization Settings
+
+<span className="method-badge method-get">GET</span> `/v1/organization/settings`
+
+```bash
+curl https://api.cloudheed.com/v1/organization/settings \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "require_2fa": true,
+  "allowed_regions": ["fsn1", "nbg1", "ash"],
+  "ip_allowlist_required": false,
+  "default_tier": "micro",
+  "sso_enabled": false
+}
+```
+
+## Update Settings
+
+<span className="method-badge method-patch">PATCH</span> `/v1/organization/settings`
+
+```bash
+curl -X PATCH https://api.cloudheed.com/v1/organization/settings \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "require_2fa": true
+  }'
+```
+
+<Callout type="warning">
+  Enabling `require_2fa` will require all members to set up 2FA on their next login.
+</Callout>
+
+## Audit Log
+
+Track all actions in your organization:
+
+<span className="method-badge method-get">GET</span> `/v1/organization/audit-log`
+
+```bash
+curl https://api.cloudheed.com/v1/organization/audit-log \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "events": [
+    {
+      "id": "evt-123",
+      "action": "database.created",
+      "actor": {
+        "id": "user-456",
+        "email": "dev@example.com"
+      },
+      "resource": {
+        "type": "database",
+        "id": "db-abc123",
+        "name": "production-db"
+      },
+      "ip_address": "203.0.113.50",
+      "created_at": "2026-03-17T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "total": 150
+  }
+}
+```
+
+## Available Actions
+
+| Action | Description |
+|--------|-------------|
+| `database.created` | Database was created |
+| `database.deleted` | Database was deleted |
+| `database.resized` | Database tier changed |
+| `member.invited` | Team member invited |
+| `member.removed` | Team member removed |
+| `member.role_changed` | Member role updated |
+| `api_key.created` | API key created |
+| `api_key.revoked` | API key revoked |
+| `settings.updated` | Org settings changed |
