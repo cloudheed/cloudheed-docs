@@ -1,0 +1,100 @@
+# Backup Endpoints
+
+API reference for database backup endpoints.
+
+import { Callout } from 'nextra/components'
+
+## Create Backup
+
+Create a manual backup of a database.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/backups`
+
+### Response `202 Accepted`
+
+```json
+{
+  "id": "backup-abc123",
+  "instance_id": "db-abc123",
+  "type": "manual",
+  "status": "pending",
+  "size_bytes": 0,
+  "created_at": "2026-03-17T10:00:00Z"
+}
+```
+
+<Callout type="info">
+  Backups are created asynchronously. Poll the backup status to check completion.
+</Callout>
+
+---
+
+## List Backups
+
+<span className="method-badge method-get">GET</span> `/v1/databases/{id}/backups`
+
+### Response
+
+```json
+{
+  "backups": [
+    {
+      "id": "backup-abc123",
+      "instance_id": "db-abc123",
+      "type": "manual",
+      "status": "completed",
+      "size_bytes": 52428800,
+      "started_at": "2026-03-17T10:00:00Z",
+      "completed_at": "2026-03-17T10:05:00Z",
+      "expires_at": "2026-04-16T10:00:00Z",
+      "created_at": "2026-03-17T10:00:00Z"
+    }
+  ]
+}
+```
+
+### Backup Status
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Backup queued |
+| `running` | Backup in progress |
+| `completed` | Backup finished successfully |
+| `failed` | Backup failed |
+
+### Backup Types
+
+| Type | Description |
+|------|-------------|
+| `manual` | User-initiated backup |
+| `scheduled` | Automatic scheduled backup |
+
+---
+
+## Restore from Backup
+
+Restore a database from a backup.
+
+<span className="method-badge method-post">POST</span> `/v1/databases/{id}/restore`
+
+### Request Body
+
+```json
+{
+  "backup_id": "backup-abc123"
+}
+```
+
+### Response `202 Accepted`
+
+```json
+{
+  "message_code": "restore_initiated",
+  "backup_id": "backup-abc123",
+  "status": "pending"
+}
+```
+
+<Callout type="warning">
+  Restoring a backup will overwrite all current data in the database.
+</Callout>

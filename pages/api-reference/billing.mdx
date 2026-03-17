@@ -1,0 +1,169 @@
+# Billing Endpoints
+
+API reference for billing and invoice endpoints.
+
+import { Callout } from 'nextra/components'
+
+<Callout type="info">
+  All billing endpoints require the `X-Organization-Id` header.
+</Callout>
+
+## Get Billing Summary
+
+Get current billing period summary for an organization.
+
+<span className="method-badge method-get">GET</span> `/v1/billing`
+
+### Response
+
+```json
+{
+  "period": {
+    "start": "2026-03-01",
+    "end": "2026-03-31"
+  },
+  "total_cost": 79.99,
+  "total_hours": 744,
+  "database_count": 2,
+  "databases": [
+    {
+      "id": "db-abc123",
+      "name": "production-db",
+      "tier": "medium",
+      "hours": 744,
+      "cost": 79.99
+    }
+  ],
+  "outstanding_balance": 0
+}
+```
+
+---
+
+## List Invoices
+
+<span className="method-badge method-get">GET</span> `/v1/invoices`
+
+### Response
+
+```json
+[
+  {
+    "id": "inv-abc123",
+    "invoice_number": "INV-2026-001",
+    "status": "paid",
+    "period_start": "2026-02-01T00:00:00Z",
+    "period_end": "2026-02-28T23:59:59Z",
+    "subtotal": 79.99,
+    "tax_rate": 0,
+    "tax_amount": 0,
+    "total": 79.99,
+    "currency": "EUR",
+    "due_date": "2026-03-15T00:00:00Z",
+    "paid_at": "2026-03-10T14:30:00Z",
+    "created_at": "2026-03-01T00:00:00Z"
+  }
+]
+```
+
+### Invoice Status
+
+| Status | Description |
+|--------|-------------|
+| `draft` | Invoice being prepared |
+| `pending` | Awaiting payment |
+| `paid` | Payment received |
+| `overdue` | Past due date |
+| `void` | Cancelled |
+
+---
+
+## Download Invoice PDF
+
+<span className="method-badge method-get">GET</span> `/v1/invoices/{id}/pdf`
+
+Returns the invoice as a PDF file.
+
+### Response Headers
+
+```
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="INV-2026-001.pdf"
+```
+
+---
+
+## List Payments
+
+<span className="method-badge method-get">GET</span> `/v1/payments`
+
+### Response
+
+```json
+{
+  "payments": [
+    {
+      "id": "pay-abc123",
+      "invoice_id": "inv-abc123",
+      "amount": 79.99,
+      "currency": "EUR",
+      "status": "succeeded",
+      "payment_method": "card",
+      "created_at": "2026-03-10T14:30:00Z"
+    }
+  ]
+}
+```
+
+### Payment Status
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Payment processing |
+| `succeeded` | Payment successful |
+| `failed` | Payment failed |
+| `refunded` | Payment refunded |
+
+---
+
+## Create Checkout
+
+Initiate a payment for an outstanding invoice.
+
+<span className="method-badge method-post">POST</span> `/v1/payments/checkout`
+
+### Request Body
+
+```json
+{
+  "invoice_id": "inv-abc123"
+}
+```
+
+### Response
+
+```json
+{
+  "checkout_url": "https://pay.cloudheed.com/checkout/abc123",
+  "payment_id": "pay-abc123",
+  "expires_at": "2026-03-17T11:00:00Z"
+}
+```
+
+---
+
+## Get Payment Status
+
+<span className="method-badge method-get">GET</span> `/v1/payments/{id}/status`
+
+### Response
+
+```json
+{
+  "id": "pay-abc123",
+  "status": "succeeded",
+  "invoice_id": "inv-abc123",
+  "amount": 79.99,
+  "currency": "EUR"
+}
+```

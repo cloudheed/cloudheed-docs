@@ -1,5 +1,9 @@
 {
   "index": "Overview",
   "authentication": "Authentication",
-  "databases": "Databases"
+  "databases": "Databases",
+  "replicas": "Replicas",
+  "backups": "Backups",
+  "organizations": "Organizations",
+  "billing": "Billing"
 }
