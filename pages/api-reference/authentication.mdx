@@ -194,17 +194,57 @@ Create a new API key.
 
 ---
 
-## Revoke API Key
+## Get API Key
 
-<span className="method-badge method-delete">DELETE</span> `/v1/auth/api-keys/{id}`
+<span className="method-badge method-get">GET</span> `/v1/auth/api-keys/{id}`
 
 ### Response
 
 ```json
 {
-  "message_code": "api_key_revoked"
+  "id": "key-123",
+  "name": "Production Key",
+  "key_prefix": "ch_live_abc",
+  "scopes": ["read", "write"],
+  "expires_at": "2027-03-17T00:00:00Z",
+  "created_at": "2026-03-17T00:00:00Z"
 }
 ```
+
+---
+
+## Rotate API Key
+
+Generate a new token for an existing API key. The old token remains valid for 1 hour.
+
+<span className="method-badge method-post">POST</span> `/v1/auth/api-keys/{id}/rotate`
+
+### Response
+
+```json
+{
+  "id": "key-123",
+  "name": "Production Key",
+  "token": "ch_live_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "key_prefix": "ch_live_yyy",
+  "scopes": ["read", "write"],
+  "previous_token_valid_until": "2026-03-17T11:00:00Z"
+}
+```
+
+<Callout type="info">
+  The old token remains valid for 1 hour after rotation, giving you time to update your applications.
+</Callout>
+
+---
+
+## Revoke API Key
+
+Immediately invalidates the API key.
+
+<span className="method-badge method-delete">DELETE</span> `/v1/auth/api-keys/{id}`
+
+Returns `204 No Content` on success.
 
 ---
 

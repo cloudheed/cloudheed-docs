@@ -89,6 +89,38 @@ curl https://api.cloudheed.com/v1/databases \
 | `org:read` | View organization details |
 | `org:write` | Manage organization settings |
 
+### Rotating API Keys
+
+Rotate keys regularly for security. The old key remains valid for 1 hour after rotation.
+
+```bash
+curl -X POST https://api.cloudheed.com/v1/auth/api-keys/key-123/rotate \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "key-123",
+  "token": "ch_live_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "previous_token_valid_until": "2026-03-17T11:00:00Z"
+}
+```
+
+<Callout type="info">
+  The 1-hour grace period lets you update your applications without downtime.
+</Callout>
+
+### Revoking API Keys
+
+Immediately invalidate a compromised key:
+
+```bash
+curl -X DELETE https://api.cloudheed.com/v1/auth/api-keys/key-123 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
 ## Two-Factor Authentication (2FA)
 
 Enable 2FA for additional security.
