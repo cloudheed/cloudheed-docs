@@ -37,9 +37,9 @@ const config: DocsThemeConfig = {
     }
   },
   project: {
-    link: 'https://github.com/cloudheed/api',
+    link: 'https://github.com/cloudheed/cloudheed-docs',
   },
-  docsRepositoryBase: 'https://github.com/cloudheed/docs/tree/main',
+  docsRepositoryBase: 'https://github.com/cloudheed/cloudheed-docs/tree/main',
   primaryHue: 0,
   primarySaturation: 80,
   sidebar: {
